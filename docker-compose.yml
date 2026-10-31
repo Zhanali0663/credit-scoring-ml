@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: credit-scoring-app
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: streamlit run app/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+
+  training:
+    build: .
+    container_name: credit-scoring-train
+    volumes:
+      - .:/app
+    command: python -m src.utils.pipeline

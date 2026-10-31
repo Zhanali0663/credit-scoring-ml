@@ -1,0 +1,9 @@
+2026-10-31 20:47:13,023 | INFO     | tune_models | main:60 | ======================================================================
+2026-10-31 20:47:13,023 | INFO     | tune_models | main:61 | TUNING RUN START | budget per model: 1m20s | models: xgboost,lightgbm
+2026-10-31 20:47:13,321 | INFO     | tune_models | main:70 | Feature matrix: (24000, 61) | target balance: {0: 18691, 1: 5309}
+2026-10-31 20:47:13,321 | INFO     | tune_models | main:83 | Tuning xgboost | budget for this model: 1m20s | max trials: 12
+2026-10-31 20:48:37,758 | INFO     | tune_models | main:83 | Tuning lightgbm | budget for this model: 1m15s | max trials: 12
+2026-10-31 20:49:45,906 | INFO     | tune_models | main:104 | SUMMARY xgboost | trials=9 | best CV AUC=0.7881
+2026-10-31 20:49:45,906 | INFO     | tune_models | main:104 | SUMMARY lightgbm | trials=12 | best CV AUC=0.7876
+2026-10-31 20:49:45,906 | INFO     | tune_models | main:110 | Saved best params to C:\All\why\configs\best_params.yaml
+2026-10-31 20:49:45,906 | INFO     | tune_models | main:111 | TUNING RUN DONE in 2m32s

@@ -1,0 +1,18 @@
+xgboost:
+  n_estimators: 290
+  learning_rate: 0.03417788308088451
+  max_depth: 3
+  min_child_weight: 16.161484284305107
+  subsample: 0.9041009607384598
+  colsample_bytree: 0.6507011424693778
+  reg_lambda: 2.487370631629344
+  gamma: 1.7437719173003337
+lightgbm:
+  n_estimators: 284
+  learning_rate: 0.03216078419470535
+  num_leaves: 57
+  max_depth: 3
+  min_child_samples: 23
+  subsample: 0.644639302316432
+  colsample_bytree: 0.816259298663039
+  reg_lambda: 0.0377837566557612

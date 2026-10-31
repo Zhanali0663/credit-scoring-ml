@@ -1,0 +1,53 @@
+# Project configuration
+project:
+  name: "credit-scoring-ml"
+  version: "1.0.0"
+  description: "End-to-end credit scoring ML pipeline"
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  external_dir: "data/external"
+  target_col: "default_payment_next_month"
+  id_col: "ID"
+  test_size: 0.2
+  random_state: 42
+  stratify: true
+
+features:
+  numerical_features:
+    - "LIMIT_BAL"
+    - "AGE"
+    - "BILL_AMT1"
+    - "BILL_AMT2"
+    - "BILL_AMT3"
+    - "BILL_AMT4"
+    - "BILL_AMT5"
+    - "BILL_AMT6"
+    - "PAY_AMT1"
+    - "PAY_AMT2"
+    - "PAY_AMT3"
+    - "PAY_AMT4"
+    - "PAY_AMT5"
+    - "PAY_AMT6"
+  categorical_features:
+    - "SEX"
+    - "EDUCATION"
+    - "MARRIAGE"
+    - "PAY_0"
+    - "PAY_2"
+    - "PAY_3"
+    - "PAY_4"
+    - "PAY_5"
+    - "PAY_6"
+
+models:
+  artifacts_dir: "models_artifacts"
+  metrics_dir: "reports/metrics"
+  figures_dir: "reports/figures"
+  save_format: "joblib"
+
+cv:
+  n_splits: 5
+  shuffle: true
+  random_state: 42

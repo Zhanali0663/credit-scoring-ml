@@ -1,0 +1,11 @@
+-r requirements.txt
+
+# Code quality
+ruff>=0.5
+black>=24.0
+mypy>=1.9
+pre-commit>=3.6
+
+# Notebook tools
+jupyter>=1.0
+ipykernel>=6.25

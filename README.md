@@ -6,9 +6,9 @@ Five model families are benchmarked under identical conditions, the two
 strongest are tuned with Optuna, and the winning model is explained with SHAP.
 Includes a Streamlit scoring demo and a Dockerised runtime.
 
-[![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
+
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
-[![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions) [![Live — HF last](https://img.shields.io/badge/Space-RESTORED-brightgreen?logo=huggingface)](https://kuandykovzhanali-last.hf.space) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Results
 

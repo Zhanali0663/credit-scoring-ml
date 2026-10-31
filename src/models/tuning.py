@@ -8,16 +8,14 @@ from __future__ import annotations
 
 import json
 import time
-from pathlib import Path
-from typing import Any, Dict, List, Literal
+from typing import Any, Literal
 
 import numpy as np
 import optuna
 import pandas as pd
-from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import StratifiedKFold
 
-from src.utils.config import get_project_root
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -74,7 +72,7 @@ def _xgb_objective(X: pd.DataFrame, y: pd.Series):
             "reg_lambda": trial.suggest_float("reg_lambda", 1e-2, 10, log=True),
             "gamma": trial.suggest_float("gamma", 0.0, 3.0),
         }
-        scores: List[float] = []
+        scores: list[float] = []
         skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
         for tr_idx, va_idx in skf.split(X, y):
             model = XGBClassifier(
@@ -109,7 +107,7 @@ def _lgb_objective(X: pd.DataFrame, y: pd.Series):
             "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
             "reg_lambda": trial.suggest_float("reg_lambda", 1e-2, 10, log=True),
         }
-        scores: List[float] = []
+        scores: list[float] = []
         skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
         for tr_idx, va_idx in skf.split(X, y):
             model = LGBMClassifier(
@@ -135,7 +133,7 @@ def tune_model(
     budget_seconds: float = 150,
     seed: int = 42,
     max_trials: int = 25,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Run a time-boxed Optuna study for one model family.
 
     Prints human-readable progress after every trial: trial index, best CV

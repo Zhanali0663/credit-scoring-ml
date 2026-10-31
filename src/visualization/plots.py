@@ -1,8 +1,8 @@
 """Visualization helpers for credit scoring evaluation."""
 from __future__ import annotations
 
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 import matplotlib
 
@@ -84,7 +84,7 @@ def plot_comparison_bar(df: pd.DataFrame, metric: str, save_to: Path) -> None:
     ax.set_xlabel(metric)
     ax.set_title(f"Model comparison — {metric}")
     ax.invert_yaxis()
-    for i, (m, v) in enumerate(zip(df["model"], df[metric])):
+    for i, (_m, v) in enumerate(zip(df["model"], df[metric], strict=False)):
         ax.text(v, i, f" {v:.4f}", va="center")
     fig.tight_layout()
     _ensure_dir(save_to)

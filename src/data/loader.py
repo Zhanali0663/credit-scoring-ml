@@ -13,11 +13,8 @@ Both modes are wrapped with a fallback: if the dataset is already in
 """
 from __future__ import annotations
 
-import os
 import shutil
-import zipfile
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 
@@ -40,7 +37,7 @@ def _default_raw_dir() -> Path:
     return get_project_root() / "data" / "raw"
 
 
-def _find_existing(raw_dir: Path) -> Optional[Path]:
+def _find_existing(raw_dir: Path) -> Path | None:
     """Return the existing dataset file in ``raw_dir`` if any."""
     if not raw_dir.exists():
         return None

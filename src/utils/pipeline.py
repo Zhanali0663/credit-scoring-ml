@@ -10,10 +10,8 @@ Usage::
 from __future__ import annotations
 
 import time
-from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
-import joblib
 import pandas as pd
 
 from src.data.loader import basic_clean, load_raw_data
@@ -37,7 +35,7 @@ from src.visualization import (
 logger = get_logger(__name__)
 
 
-def _numerical_features(X: pd.DataFrame) -> List[str]:
+def _numerical_features(X: pd.DataFrame) -> list[str]:
     return X.select_dtypes(include="number").columns.tolist()
 
 
@@ -72,7 +70,7 @@ class _PhaseTracker:
         )
 
 
-def run() -> Dict[str, Any]:
+def run() -> dict[str, Any]:
     """Run the full pipeline: load → engineer → split → compare → visualise."""
     tracker = _PhaseTracker()
     config = load_config(get_project_root() / "configs" / "paths.yaml")
@@ -122,7 +120,6 @@ def run() -> Dict[str, Any]:
     # --- 5. Visualisations ---
     tracker.begin("Generating figures and interpretability artifacts")
     table = summary["table"]
-    metrics_dir = get_project_root() / config["models"]["metrics_dir"]
     artifacts_dir = get_project_root() / config["models"]["artifacts_dir"]
 
     plot_comparison_bar(table, metric="roc_auc", save_to=figures_dir / "comparison_roc_auc.png")

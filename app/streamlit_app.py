@@ -8,9 +8,6 @@ It expects the trained pipelines to be present in ``models_artifacts/``.
 """
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Dict
-
 import pandas as pd
 import streamlit as st
 
@@ -18,8 +15,7 @@ from app.predict import predict_one
 from src.features.engineering import add_behavioural_features
 from src.utils.config import get_project_root
 
-
-FEATURE_DEFAULTS: Dict[str, int | float] = {
+FEATURE_DEFAULTS: dict[str, int | float] = {
     "LIMIT_BAL": 200_000,
     "SEX": 2,
     "EDUCATION": 2,
@@ -74,7 +70,7 @@ def main() -> None:
         st.subheader("Client features")
         with st.form("client_form"):
             cols = st.columns(3)
-            user_input: Dict[str, float] = {}
+            user_input: dict[str, float] = {}
             for i, (feat, default) in enumerate(FEATURE_DEFAULTS.items()):
                 with cols[i % 3]:
                     if isinstance(default, int):

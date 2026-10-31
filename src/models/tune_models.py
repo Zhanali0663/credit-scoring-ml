@@ -14,19 +14,18 @@ import sys
 import time
 from pathlib import Path
 
-import pandas as pd
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.data.loader import basic_clean, load_raw_data
-from src.features.engineering import add_behavioural_features, build_features_target
-from src.features.splitting import stratified_split
-from src.models.tuning import _fmt, tune_model
-from src.utils.config import get_project_root
-from src.utils.logging import get_logger
+from src.data.loader import basic_clean, load_raw_data  # noqa: E402
+from src.features.engineering import add_behavioural_features, build_features_target  # noqa: E402
+from src.features.splitting import stratified_split  # noqa: E402
+from src.models.tuning import _fmt, tune_model  # noqa: E402
+from src.utils.config import get_project_root  # noqa: E402
+from src.utils.logging import get_logger  # noqa: E402
 
 logger = get_logger(
     "tune_models",

@@ -4,7 +4,6 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
 DEFAULT_FORMAT = (
     "%(asctime)s | %(levelname)-8s | %(name)s | "
@@ -15,7 +14,7 @@ DEFAULT_FORMAT = (
 def get_logger(
     name: str,
     level: int = logging.INFO,
-    log_file: Optional[Path] = None,
+    log_file: Path | None = None,
     format_string: str = DEFAULT_FORMAT,
 ) -> logging.Logger:
     """Create or return a configured logger.

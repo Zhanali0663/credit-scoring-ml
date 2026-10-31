@@ -6,10 +6,9 @@ training set. We log ROC AUC, PR AUC, F1 and report the mean +/- std.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import joblib
-import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
@@ -27,14 +26,14 @@ def cross_validate(
     y: pd.Series,
     n_splits: int = 5,
     random_state: int = 42,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Run stratified k-fold cross-validation for a single pipeline.
 
     Returns a dictionary with the mean and std of each metric, and the per-fold
     detailed metrics.
     """
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
-    fold_metrics: List[Dict[str, float]] = []
+    fold_metrics: list[dict[str, float]] = []
 
     for fold_idx, (train_idx, val_idx) in enumerate(skf.split(X, y), start=1):
         X_tr, X_val = X.iloc[train_idx], X.iloc[val_idx]

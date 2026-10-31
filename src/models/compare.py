@@ -1,13 +1,10 @@
 ﻿"""Compare multiple classifiers on the credit scoring dataset."""
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Any, Dict, List
-
 import json
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 import pandas as pd
 
@@ -26,12 +23,12 @@ def run_comparison(
     y_train: pd.Series,
     X_test: pd.DataFrame,
     y_test: pd.Series,
-    num_features: List[str],
+    num_features: list[str],
     metrics_dir: Path | None = None,
     artifacts_dir: Path | None = None,
     n_splits: int = 5,
     random_state: int = 42,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Train every model in :data:`MODEL_REGISTRY` and return a summary.
 
     The function performs cross-validation on the training set, fits each
@@ -45,8 +42,8 @@ def run_comparison(
     metrics_dir.mkdir(parents=True, exist_ok=True)
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
-    rows: List[Dict[str, Any]] = []
-    full_report: Dict[str, Any] = {}
+    rows: list[dict[str, Any]] = []
+    full_report: dict[str, Any] = {}
 
     run_start = time.perf_counter()
     names = list(MODEL_REGISTRY)

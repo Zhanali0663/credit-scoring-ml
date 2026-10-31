@@ -1,15 +1,13 @@
 """Pipeline factory - builds a ColumnTransformer + estimator pipeline."""
 from __future__ import annotations
 
-from typing import List
-
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from src.models.registry import build_model
 
 
-def build_pipeline(model_name: str, num_features: List[str]) -> Pipeline:
+def build_pipeline(model_name: str, num_features: list[str]) -> Pipeline:
     """Build a scaling + estimator pipeline.
 
     Numerical features are standardized (helps Logistic Regression and

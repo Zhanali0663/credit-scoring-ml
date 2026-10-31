@@ -6,7 +6,7 @@ passed as a dict or a pandas DataFrame.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any
 
 import joblib
 import pandas as pd
@@ -18,14 +18,14 @@ from src.utils.logging import get_logger
 logger = get_logger(__name__)
 
 
-def load_artifacts(artifacts_dir: Path | None = None) -> Dict[str, Any]:
+def load_artifacts(artifacts_dir: Path | None = None) -> dict[str, Any]:
     """Load all available model artifacts.
 
     Returns a dict of ``{model_name: pipeline}``.
     """
     if artifacts_dir is None:
         artifacts_dir = get_project_root() / "models_artifacts"
-    models: Dict[str, Any] = {}
+    models: dict[str, Any] = {}
     for path in sorted(artifacts_dir.glob("*.joblib")):
         models[path.stem] = joblib.load(path)
     if not models:
@@ -34,10 +34,10 @@ def load_artifacts(artifacts_dir: Path | None = None) -> Dict[str, Any]:
 
 
 def predict_one(
-    client: Dict[str, Any],
+    client: dict[str, Any],
     model_name: str = "lightgbm",
     artifacts_dir: Path | None = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Predict default probability for a single client dict."""
     if artifacts_dir is None:
         artifacts_dir = get_project_root() / "models_artifacts"
@@ -47,7 +47,9 @@ def predict_one(
     df = add_behavioural_features(df)
 
     # Make sure column order matches what the pipeline was trained on
-    expected_cols = [c for c in pipeline.feature_names_in_] if hasattr(pipeline, "feature_names_in_") else df.columns.tolist()
+    expected_cols = (
+        list(pipeline.feature_names_in_) if hasattr(pipeline, "feature_names_in_") else df.columns.tolist()
+    )
     df = df[expected_cols]
 
     proba = float(pipeline.predict_proba(df)[0, 1])

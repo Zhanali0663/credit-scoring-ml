@@ -25,8 +25,6 @@ The engineered feature set mirrors signals used by professional risk teams:
 """
 from __future__ import annotations
 
-from typing import Tuple
-
 import numpy as np
 import pandas as pd
 
@@ -133,7 +131,7 @@ def add_behavioural_features(df: pd.DataFrame) -> pd.DataFrame:
 
 def build_features_target(
     df: pd.DataFrame, target_col: str = "default_payment_next_month", id_col: str = "ID"
-) -> Tuple[pd.DataFrame, pd.Series]:
+) -> tuple[pd.DataFrame, pd.Series]:
     """Split a raw dataframe into features ``X`` and target ``y``.
 
     Parameters

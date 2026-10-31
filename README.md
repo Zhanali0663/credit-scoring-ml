@@ -60,11 +60,6 @@ attributions.
 
 - **Live demo (Streamlit Community Cloud — free, 24/7, works):** https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app
   (connect repo `Zhanali0663/credit-scoring-ml`, main branch, `app` path; uses `.venv` deps + `models_artifacts/lightgbm.joblib`).
-- **HF Space — restored:** https://kuandykovzhanali-last.hf.space
-- **HF Space — new (static repo):** https://huggingface.co/spaces/Zhanali/credit-scoring-demo
-  (contains full deploy folder; running app needs PRO / Streamlit Community Cloud).
-  (original project preserved; our demo files added separately if needed).
-- **New Space (`credit-scoring-demo`) — ready for deploy:** requires PRO/Docker or manual Streamlit community deploy.
 - **GitHub repo:** https://github.com/Zhanali0663/credit-scoring-ml
 
 ## Feature engineering

@@ -6,9 +6,9 @@ Five model families are benchmarked under identical conditions, the two
 strongest are tuned with Optuna, and the winning model is explained with SHAP.
 Includes a Streamlit scoring demo and a Dockerised runtime.
 
-
+[![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
-[![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions) [![Live — Streamlit Cloud](https://img.shields.io/badge/Live-Streamlit_Cloud-blue?logo=streamlit)](https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Results
 
@@ -58,7 +58,11 @@ attributions.
 
 ## Live demo
 
-- **Original Space (`last`) — restored:** https://kuandykovzhanali-last.hf.space
+- **Live demo (Streamlit Community Cloud — free, 24/7, works):** https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app
+  (connect repo `Zhanali0663/credit-scoring-ml`, main branch, `app` path; uses `.venv` deps + `models_artifacts/lightgbm.joblib`).
+- **HF Space — restored:** https://kuandykovzhanali-last.hf.space
+- **HF Space — new (static repo):** https://huggingface.co/spaces/Zhanali/credit-scoring-demo
+  (contains full deploy folder; running app needs PRO / Streamlit Community Cloud).
   (original project preserved; our demo files added separately if needed).
 - **New Space (`credit-scoring-demo`) — ready for deploy:** requires PRO/Docker or manual Streamlit community deploy.
 - **GitHub repo:** https://github.com/Zhanali0663/credit-scoring-ml

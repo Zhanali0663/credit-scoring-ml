@@ -8,7 +8,7 @@ Includes a Streamlit scoring demo and a Dockerised runtime.
 
 [![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Streamlit_Cloud-blue?logo=streamlit)](https://credit-scoring-ml.streamlit.app) [![HF Space](https://img.shields.io/badge/HF_Space-repo_ready-yellow?logo=huggingface)](https://huggingface.co/spaces/kuandykovzhanali/credit-scoring-demo) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Results
 
@@ -55,6 +55,16 @@ attributions.
   months of repayment status, bill statements and payments per client.
 - Auto-downloaded by `src/data/loader.py` on first use (kagglehub with a
   direct-URL fallback); no manual Kaggle credentials needed.
+
+## Live demo
+
+- **Streamlit Community Cloud (24/7, free):** https://credit-scoring-ml.streamlit.app
+  (same `app/streamlit_app.py`; deploys automatically from the repo).
+- **Hugging Face Space (repo ready):** https://huggingface.co/spaces/kuandykovzhanali/credit-scoring-demo
+  — the `deploy/hf_space/` folder has the Gradio-based app and the 295 KB
+  `lightgbm.joblib` artifact. HF deprecated Streamlit SDK in 2025; Gradio and
+  Docker SDKs now require a paid PRO plan, so the Space is kept as a ready repo
+  for future activation.
 
 ## Feature engineering
 

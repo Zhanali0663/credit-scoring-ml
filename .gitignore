@@ -49,11 +49,6 @@ data/processed/*
 !data/processed/.gitkeep
 data/external/*
 !data/external/.gitkeep
-models_artifacts/*.joblib
-models_artifacts/*.pkl
-models_artifacts/*.cbm
-models_artifacts/*.json
-models_artifacts/*.txt
 
 # Local helper guides and run logs — not part of the deliverable
 PUSH_INSTRUCTIONS.md

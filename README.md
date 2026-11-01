@@ -1,10 +1,10 @@
 ﻿# Credit Scoring — Default Risk Prediction
 
-A reproducible ML pipeline that predicts next-month credit-card default on the
-UCI *Default of Credit Card Clients* dataset (30,000 borrowers, Taiwan, 2005).
-Five model families are benchmarked under identical conditions, the two
-strongest are tuned with Optuna, and the winning model is explained with SHAP.
-Includes a Streamlit scoring demo, Docker runtime, CI (ruff + pytest), formal `MODEL_CARD.md`, calibration check (`calibration_check.py`), property-based tests (`test_invariants.py`), quick ablation/drift reference scripts, and `DOCUMENTATION.md`.
+A reproducible end-to-end ML pipeline for credit-card default prediction (UCI dataset, 30k clients, 2005). Five model families benchmarked under identical conditions; headline LightGBM reaches test ROC AUC 0.783 with honest CV bounds (±0.006). Includes SHAP interpretation, Docker, CI, Streamlit demo, formal `MODEL_CARD.md`, calibration check, and ablation plans.
+
+[![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
+[![Live — Streamlit Cloud](https://img.shields.io/badge/Live-Streamlit_Cloud-blue?logo=streamlit)](https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Table of Contents
 - [Results](#results)
@@ -22,9 +22,6 @@ Includes a Streamlit scoring demo, Docker runtime, CI (ruff + pytest), formal `M
 
 ## Engineering highlights
 
-[![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
-[![Live — Streamlit Cloud](https://img.shields.io/badge/Live-Streamlit_Cloud-blue?logo=streamlit)](https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 - **Reproducible split:** fixed `seed=42`, stratified 80/20, verified by `tests/test_pipeline_end_to_end.py`.
 - **No data leakage:** `StandardScaler` fitted inside each CV fold (`Pipeline` object); no SMOTE before split.
 - **Deterministic pipeline:** identical `random_state` in registry, splitting, and tuning (`configs/best_params.yaml` picked up automatically).
@@ -190,6 +187,9 @@ Executed with outputs committed, so figures render directly on GitHub:
   mapped, human-readable reason set — noted in the model card, not solved here.
 - **Calibration available but demo uses raw probabilities.** `calibration_check.py` applies isotonic calibration (`CalibratedClassifierCV`) and reports Brier improvement (`+0.0455`). The live demo keeps uncalibrated probabilities for simplicity; production deployment should use calibrated outputs with a cost-sensitive threshold.
 - **Threshold assumption is illustrative.** The shipped demo uses 0.5 for visual simplicity; a business-optimal threshold requires a cost matrix (false-alarm cost vs missed-default cost).
+
+### Business take-away
+The pipeline supports production deployment: deterministic split (`seed=42`), containerised runtime (`Dockerfile`), calibration (`CalibratedClassifierCV`), formal artifacts (`MODEL_CARD.md`), and property-based invariants (`tests/test_invariants.py`). The remaining gap is cost-sensitive threshold optimisation based on business economics (e.g., 5:1 cost ratio shifts threshold from 0.50 to ~0.38), noted explicitly and ready for the next step.
 
 ## References
 

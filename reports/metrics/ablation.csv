@@ -1,0 +1,9 @@
+seed,config,test_roc_auc,n_features
+42,raw_default,0.7795,23
+42,raw_tuned,0.7795,23
+42,eng_default,0.7828,61
+42,eng_tuned,0.7828,61
+123,raw_default,0.7839,23
+123,raw_tuned,0.7839,23
+123,eng_default,0.7901,61
+123,eng_tuned,0.7901,61

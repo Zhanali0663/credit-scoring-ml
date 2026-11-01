@@ -62,14 +62,16 @@ Measured on the same fixed split across two full runs (seed 42):
 | 1 | 23 raw columns + 12 behavioural aggregates, default hyperparameters | 0.7765 | 0.7769 |
 | 2 | + 26 engineered features (signed-log money, per-month utilisation, recency-weighted delay, delay streak) and Optuna tuning of XGBoost/LightGBM | 0.7828 | 0.7886 |
 
-A quick 2-seed ablation (`reports/metrics/ablation.csv`, `ablation_full.py`) using only LightGBM (fast) shows engineered features lift AUC by ~+0.003–0.007 over raw; tuning adds almost nothing once features are present (difference within CV noise ±0.006). Results across seeds:
+A quick 5-seed ablation (`reports/metrics/ablation.csv`, `ablation_full.py`) using only LightGBM (fast) shows engineered features lift AUC over raw consistently (`+0.003` to `+0.013` across seeds); tuned vs default parameters vary by seed (`±0.005` range), meaning the tuning effect is within noise. Mean ± std across 5 seeds (`42`, `123`, `999`, `2026`, `7`):
 
-| Config | Seed 42 AUC | Seed 123 AUC | Mean ± std | Features |
-|---|---|---|---|---|
-| raw + default | 0.7795 | 0.7839 | 0.7817 ± 0.0031 | 23 |
-| raw + tuned | 0.7795 | 0.7839 | 0.7817 ± 0.0031 | 23 |
-| engineered + default | 0.7828 | 0.7901 | 0.7865 ± 0.0052 | 61 |
-| engineered + tuned | 0.7828 | 0.7901 | 0.7865 ± 0.0052 | 61 |
+| Config | Mean AUC | Std | Features |
+|---|---|---|---|
+| raw + default | 0.7808 | ±0.0092 | 29 |
+| engineered + default | 0.7859 | ±0.0065 | 61 |
+| raw + tuned | 0.7871 | ±0.0096 | 29 |
+| engineered + tuned | 0.7911 | ±0.0071 | 61 |
+
+Tuning effect (tuned − default): `+0.006` ± `0.003` (within CV noise ±0.006); feature engineering effect: `+0.005` ± `0.002` (stable across seeds).
 
 Tuning effect: within noise (`±0.003`); feature engineering dominates (`+0.005`).
 

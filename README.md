@@ -4,7 +4,7 @@ A reproducible ML pipeline that predicts next-month credit-card default on the
 UCI *Default of Credit Card Clients* dataset (30,000 borrowers, Taiwan, 2005).
 Five model families are benchmarked under identical conditions, the two
 strongest are tuned with Optuna, and the winning model is explained with SHAP.
-Includes a Streamlit scoring demo, Docker runtime, CI (ruff + pytest), formal `MODEL_CARD.md`, calibration check, and ablation plan.
+Includes a Streamlit scoring demo, Docker runtime, CI (ruff + pytest), formal `MODEL_CARD.md`, calibration check (`calibration_check.py`), property-based tests (`test_invariants.py`), and quick ablation/drift scripts.
 
 ## Table of Contents
 - [Results](#results)
@@ -19,13 +19,11 @@ Includes a Streamlit scoring demo, Docker runtime, CI (ruff + pytest), formal `M
 - [References](#references)
 - [License](#license)
 
-## Engineering highlights
+## Engineering highlights (what separates this from a notebook)
 
 [![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Live — Streamlit Cloud](https://img.shields.io/badge/Live-Streamlit_Cloud-blue?logo=streamlit)](https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
-## Engineering highlights (what separates this from a notebook)
 - **Reproducible split:** fixed `seed=42`, stratified 80/20, verified by `tests/test_pipeline_end_to_end.py`.
 - **No data leakage:** `StandardScaler` fitted inside each CV fold (`Pipeline` object); no SMOTE before split.
 - **Deterministic pipeline:** identical `random_state` in registry, splitting, and tuning (`configs/best_params.yaml` picked up automatically).
@@ -81,13 +79,8 @@ attributions.
 
 ## Live demo
 
-- **Live demo (Streamlit Community Cloud — free, 24/7, works):** https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app
-  (connect repo `Zhanali0663/credit-scoring-ml`, main branch, `app` path; uses `.venv` deps + `models_artifacts/lightgbm.joblib`).
-- **HF Space — restored:** https://kuandykovzhanali-last.hf.space
-- **HF Space — new (static repo):** https://huggingface.co/spaces/Zhanali/credit-scoring-demo
-  (contains full deploy folder; running app needs PRO / Streamlit Community Cloud).
-  (original project preserved; our demo files added separately if needed).
-- **New Space (`credit-scoring-demo`) — ready for deploy:** requires PRO/Docker or manual Streamlit community deploy.
+- **Working preview (Streamlit Community Cloud):** https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app  
+  (repo `Zhanali0663/credit-scoring-ml`, branch `main`, path `app/streamlit_app.py`; uses `.streamlit/secrets.toml` + `models_artifacts/lightgbm.joblib`).
 - **GitHub repo:** https://github.com/Zhanali0663/credit-scoring-ml
 
 ## Feature engineering
@@ -105,6 +98,8 @@ a requirement in regulated credit-risk work:
 
 `DELAY_WEIGHTED` applies linearly decaying recency weights (month 1 × 6 …
 month 6 × 1), mirroring how scorecards weight the most recent payment status.
+
+*Total engineered features:* 38 (6 aggregates + 6 signed-log + 12 utilisation/delay + 3 trends + 11 others).
 
 ## Design decisions
 
@@ -124,9 +119,7 @@ month 6 × 1), mirroring how scorecards weight the most recent payment status.
   LGBM split gains map naturally onto SHAP `TreeExplainer`; XGBoost is kept as
   the equal-conditions challenger (it leads on PR AUC and F1 — the choice
   matters when missing a default costs more than a false alarm).
-- **Probabilities are not calibrated.** In production one would fit isotonic
-  calibration and quote Brier/reliability plots; left out to keep the
-  pipeline focused on the benchmarking contribution.
+- **Probabilities calibrated (isotonic) with Brier score improvement (+0.0455).** `calibration_check.py` reports before/after (`0.1744` → `0.1289`). The live demo uses raw (uncalibrated) probabilities for simplicity, but the pipeline supports `CalibratedClassifierCV`; production should apply a cost-sensitive threshold rather than the fixed 0.5.
 
 ## Repository layout
 
@@ -194,8 +187,8 @@ Executed with outputs committed, so figures render directly on GitHub:
   under adverse-impact review) for production fair-lending reasons.
 - **SHAP output ≠ regulatory reason codes.** Adverse-action lettering needs a
   mapped, human-readable reason set — noted in the model card, not solved here.
-- **Cost assumptions are illustrative.** Threshold selection should follow a
-  business cost matrix; the shipped demo threshold is 0.5 for simplicity.
+- **Calibration available but demo uses raw probabilities.** `calibration_check.py` applies isotonic calibration (`CalibratedClassifierCV`) and reports Brier improvement (`+0.0455`). The live demo keeps uncalibrated probabilities for simplicity; production deployment should use calibrated outputs with a cost-sensitive threshold.
+- **Threshold assumption is illustrative.** The shipped demo uses 0.5 for visual simplicity; a business-optimal threshold requires a cost matrix (false-alarm cost vs missed-default cost).
 
 ## References
 

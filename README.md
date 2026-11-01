@@ -1,6 +1,6 @@
 ﻿# Credit Scoring — Default Risk Prediction
 
-A reproducible end-to-end ML pipeline for credit-card default prediction (UCI dataset, 30k clients, 2005). Five model families benchmarked under identical conditions; headline LightGBM reaches test ROC AUC 0.783 with CV std ±0.006. Includes SHAP interpretation, Docker, CI, Streamlit demo, formal `MODEL_CARD.md`, calibration check, property-based tests (`test_invariants.py`), quick ablation/drift reference scripts, and `DOCUMENTATION.md`.
+A reproducible end-to-end ML pipeline for credit-card default prediction (UCI dataset, 30k clients, 2005). Five model families benchmarked under identical conditions; headline LightGBM reaches test ROC AUC 0.783 with CV std ±0.006. Includes SHAP interpretation, Docker, CI, Streamlit demo, formal `MODEL_CARD.md`, calibration check (`calibration_check.py`), property-based tests (`test_invariants.py`), quick reference scripts (`threshold_optimization.py`, `IMPROVEMENT_PLAN.md`), and `DOCUMENTATION.md`.
 
 [![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
@@ -186,11 +186,11 @@ Executed with outputs committed, so figures render directly on GitHub:
 - **SHAP output ≠ regulatory reason codes.** Adverse-action lettering needs a
   mapped, human-readable reason set — noted in the model card, not solved here.
 - **Calibration available but demo uses raw probabilities.** `calibration_check.py` applies isotonic calibration (`CalibratedClassifierCV`) and reports Brier improvement (`+0.0455`). The live demo keeps uncalibrated probabilities for simplicity; production deployment should use calibrated outputs with a cost-sensitive threshold.
-- **Cost-sensitive threshold not applied.** `threshold_optimization.py` evaluates cost ratios on the test sample; with 5:1 (missed default vs false alarm) the optimal threshold is ~0.35 (cost 1173 vs 1217 at 0.50), demonstrating business value of calibration + threshold tuning.
+- **Cost-sensitive threshold evaluated.** `threshold_optimization.py` uses the held-out test sample (for demonstration only; production should use out-of-fold predictions) with 5:1 cost ratio (FN:FP). The optimal raw-score threshold is ~0.35 (cost 1173 vs 1217 at 0.50), a ~3.6% cost reduction. The theoretical calibrated threshold for 5:1 would be ~0.17, but the uncalibrated model (`class_weight="balanced"`) produces higher raw scores, so the empirical optimum is 0.35. Production should apply calibrated outputs (`CalibratedClassifierCV`) and select the threshold on a separate validation set.
 - **Threshold assumption is illustrative.** The shipped demo uses 0.5 for visual simplicity; business-optimal selection requires the cost matrix above.
 
 ### Business take-away
-The pipeline supports production-style deployment: deterministic split (`seed=42`), containerised runtime (`Dockerfile`), calibration (`CalibratedClassifierCV`), formal artifacts (`MODEL_CARD.md`), property-based invariants (`tests/test_invariants.py`), and reference ablation/drift scripts. The model itself is a methodology demonstration (`UCI` 2005 dataset, single portfolio). A business-optimal threshold with 5:1 cost ratio shifts from 0.50 to ~0.35 (`threshold_optimization.py`), reducing total cost; calibrated outputs (`calibration_check.py`) would further improve reliability. The remaining gap for full production is cost-sensitive threshold optimisation tied to live portfolio economics.
+The pipeline supports production-style deployment: deterministic split (`seed=42`), containerised runtime (`Dockerfile`), calibration (`CalibratedClassifierCV`), formal artifacts (`MODEL_CARD.md`), property-based invariants (`tests/test_invariants.py`), reference ablation/drift scripts, and cost-threshold evaluation (`threshold_optimization.py`). The model itself is a methodology demonstration (`UCI` 2005 dataset, single portfolio). A business-optimal threshold with 5:1 cost ratio shifts from 0.50 to ~0.35 (cost 1173 vs 1217), reducing cost by ~3.6% on the test sample; calibrated outputs (`calibration_check.py`, Brier `+0.0455`) and validation-set threshold selection are the next production steps.
 
 ## References
 

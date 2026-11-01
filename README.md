@@ -4,13 +4,14 @@ A reproducible ML pipeline that predicts next-month credit-card default on the
 UCI *Default of Credit Card Clients* dataset (30,000 borrowers, Taiwan, 2005).
 Five model families are benchmarked under identical conditions, the two
 strongest are tuned with Optuna, and the winning model is explained with SHAP.
-Includes a Streamlit scoring demo, Docker runtime, CI (ruff + pytest), formal `MODEL_CARD.md`, calibration check (`calibration_check.py`), property-based tests (`test_invariants.py`), and quick ablation/drift scripts.
+Includes a Streamlit scoring demo, Docker runtime, CI (ruff + pytest), formal `MODEL_CARD.md`, calibration check (`calibration_check.py`), property-based tests (`test_invariants.py`), quick ablation/drift reference scripts, and `DOCUMENTATION.md`.
 
 ## Table of Contents
 - [Results](#results)
 - [Data](#data)
 - [Live demo](#live-demo)
 - [Feature engineering](#feature-engineering)
+- [Engineering highlights](#engineering-highlights)
 - [Design decisions](#design-decisions)
 - [Repository layout](#repository-layout)
 - [Reproducing](#reproducing)
@@ -19,7 +20,7 @@ Includes a Streamlit scoring demo, Docker runtime, CI (ruff + pytest), formal `M
 - [References](#references)
 - [License](#license)
 
-## Engineering highlights (what separates this from a notebook)
+## Engineering highlights
 
 [![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
@@ -65,8 +66,8 @@ Measured on the same fixed split across two full runs (seed 42):
 | 2 | + 26 engineered features (signed-log money, per-month utilisation, recency-weighted delay, delay streak) and Optuna tuning of XGBoost/LightGBM | 0.7828 | 0.7886 |
 
 Engineering steps were not ablated separately: the second run mixes the new
-feature set with tuned hyperparameters, so the table does not claim per-step
-attributions.
+feature set with tuned hyperparameters; per-feature attribution is planned
+(see `IMPROVEMENT_PLAN.md` for ablation steps).
 
 ## Data
 
@@ -119,7 +120,7 @@ month 6 × 1), mirroring how scorecards weight the most recent payment status.
   LGBM split gains map naturally onto SHAP `TreeExplainer`; XGBoost is kept as
   the equal-conditions challenger (it leads on PR AUC and F1 — the choice
   matters when missing a default costs more than a false alarm).
-- **Calibration evaluated (isotonic) with Brier improvement (+0.0455).** `calibration_check.py` reports before/after (`0.1744` → `0.1289`); the calibration step (`CalibratedClassifierCV`) is included in the pipeline, but the live demo uses raw (uncalibrated) probabilities for simplicity; production should apply calibrated outputs with a cost-sensitive threshold rather than the fixed 0.5.
+- **Calibration evaluated (isotonic):** `calibration_check.py` improves Brier score by `+0.0455` (`0.1744` → `0.1289`, lower is better). The pipeline includes `CalibratedClassifierCV`; the live demo uses raw (uncalibrated) probabilities for simplicity. Production should apply calibrated outputs with a cost-sensitive threshold rather than the fixed 0.5.
 
 ## Repository layout
 
@@ -196,6 +197,7 @@ Executed with outputs committed, so figures render directly on GitHub:
   for the predictive accuracy of probability of default of credit card
   clients.* Expert Systems with Applications, 36(2), 2473–2480. — source
   paper for the dataset.
+- [CI workflow](https://github.com/Zhanali0663/credit-scoring-ml/actions) (ruff + pytest) and [Docker image](https://github.com/Zhanali0663/credit-scoring-ml/blob/main/Dockerfile) rebuilt on `main`.
 
 ## License
 

@@ -1,17 +1,17 @@
 ﻿# Credit Scoring — Default Risk Prediction
 
-A reproducible end-to-end ML pipeline for credit-card default prediction (UCI dataset, 30k clients, 2005). Five model families benchmarked under identical conditions; headline LightGBM reaches test ROC AUC 0.783 with honest CV bounds (±0.006). Includes SHAP interpretation, Docker, CI, Streamlit demo, formal `MODEL_CARD.md`, calibration check, and ablation plans.
+A reproducible end-to-end ML pipeline for credit-card default prediction (UCI dataset, 30k clients, 2005). Five model families benchmarked under identical conditions; headline LightGBM reaches test ROC AUC 0.783 with CV std ±0.006. Includes SHAP interpretation, Docker, CI, Streamlit demo, formal `MODEL_CARD.md`, calibration check, property-based tests (`test_invariants.py`), quick ablation/drift reference scripts, and `DOCUMENTATION.md`.
 
 [![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![Live — Streamlit Cloud](https://img.shields.io/badge/Live-Streamlit_Cloud-blue?logo=streamlit)](https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Table of Contents
+- [Engineering highlights](#engineering-highlights)
 - [Results](#results)
 - [Data](#data)
 - [Live demo](#live-demo)
 - [Feature engineering](#feature-engineering)
-- [Engineering highlights](#engineering-highlights)
 - [Design decisions](#design-decisions)
 - [Repository layout](#repository-layout)
 - [Reproducing](#reproducing)
@@ -186,18 +186,18 @@ Executed with outputs committed, so figures render directly on GitHub:
 - **SHAP output ≠ regulatory reason codes.** Adverse-action lettering needs a
   mapped, human-readable reason set — noted in the model card, not solved here.
 - **Calibration available but demo uses raw probabilities.** `calibration_check.py` applies isotonic calibration (`CalibratedClassifierCV`) and reports Brier improvement (`+0.0455`). The live demo keeps uncalibrated probabilities for simplicity; production deployment should use calibrated outputs with a cost-sensitive threshold.
-- **Threshold assumption is illustrative.** The shipped demo uses 0.5 for visual simplicity; a business-optimal threshold requires a cost matrix (false-alarm cost vs missed-default cost).
+- **Cost-sensitive threshold not applied.** `threshold_optimization.py` evaluates cost ratios on the test sample; with 5:1 (missed default vs false alarm) the optimal threshold is ~0.35 (cost 1173 vs 1217 at 0.50), demonstrating business value of calibration + threshold tuning.
+- **Threshold assumption is illustrative.** The shipped demo uses 0.5 for visual simplicity; business-optimal selection requires the cost matrix above.
 
 ### Business take-away
-The pipeline supports production deployment: deterministic split (`seed=42`), containerised runtime (`Dockerfile`), calibration (`CalibratedClassifierCV`), formal artifacts (`MODEL_CARD.md`), and property-based invariants (`tests/test_invariants.py`). The remaining gap is cost-sensitive threshold optimisation based on business economics (e.g., 5:1 cost ratio shifts threshold from 0.50 to ~0.38), noted explicitly and ready for the next step.
+The pipeline supports production-style deployment: deterministic split (`seed=42`), containerised runtime (`Dockerfile`), calibration (`CalibratedClassifierCV`), formal artifacts (`MODEL_CARD.md`), property-based invariants (`tests/test_invariants.py`), and reference ablation/drift scripts. The model itself is a methodology demonstration (`UCI` 2005 dataset, single portfolio). A business-optimal threshold with 5:1 cost ratio shifts from 0.50 to ~0.35 (`threshold_optimization.py`), reducing total cost; calibrated outputs (`calibration_check.py`) would further improve reliability. The remaining gap for full production is cost-sensitive threshold optimisation tied to live portfolio economics.
 
 ## References
 
 - Yeh, I.-C., & Lien, C.-H. (2009). *The comparisons of data mining techniques
   for the predictive accuracy of probability of default of credit card
-  clients.* Expert Systems with Applications, 36(2), 2473–2480. — source
-  paper for the dataset.
-- [CI workflow](https://github.com/Zhanali0663/credit-scoring-ml/actions) (ruff + pytest) and [Docker image](https://github.com/Zhanali0663/credit-scoring-ml/blob/main/Dockerfile) rebuilt on `main`.
+  clients.* Expert Systems with Applications, 36(2), 2473–2480. — source paper.
+- UCI ML Repository dataset reference: [archive.ics.uci.edu/dataset/350](https://archive.ics.uci.edu/dataset/350/default+of+credit+card+clients).
 
 ## License
 

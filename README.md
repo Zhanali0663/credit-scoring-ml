@@ -62,9 +62,7 @@ Measured on the same fixed split across two full runs (seed 42):
 | 1 | 23 raw columns + 12 behavioural aggregates, default hyperparameters | 0.7765 | 0.7769 |
 | 2 | + 26 engineered features (signed-log money, per-month utilisation, recency-weighted delay, delay streak) and Optuna tuning of XGBoost/LightGBM | 0.7828 | 0.7886 |
 
-Engineering steps were not ablated separately: the second run mixes the new
-feature set with tuned hyperparameters; per-feature attribution is planned
-(see `IMPROVEMENT_PLAN.md` for ablation steps).
+Engineering steps were not fully ablated in the headline benchmark; the second run mixes new features with tuning. A quick 2-seed ablation (`reports/metrics/ablation.csv`, `ablation_full.py`) shows engineered features lift test AUC by ~+0.003–0.006 (23 → 61 features); tuning adds minimal further gain once features are present.
 
 ## Data
 

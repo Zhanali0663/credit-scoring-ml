@@ -29,7 +29,7 @@ Includes a Streamlit scoring demo, Docker runtime, CI (ruff + pytest), formal `M
 - **Deterministic pipeline:** identical `random_state` in registry, splitting, and tuning (`configs/best_params.yaml` picked up automatically).
 - **Containerised runtime:** `Dockerfile` + `docker-compose.yml` for demo isolation.
 - **Formal artifacts:** `MODEL_CARD.md` (intended use, fairness notes, calibration status, out-of-scope); `DOCUMENTATION.md` (metric glossary, pitfalls checklist).
-- **Calibration check:** `calibration_check.py` reports Brier before/after (`isotonic`); live demo uses uncalibrated probabilities (noted in model card).
+- **Calibration evaluated:** `calibration_check.py` reports Brier before/after (`isotonic`, `+0.0455`); the pipeline includes the calibration step, but the live demo uses raw (uncalibrated) probabilities for simplicity.
 
 ## Results
 
@@ -99,7 +99,7 @@ a requirement in regulated credit-risk work:
 `DELAY_WEIGHTED` applies linearly decaying recency weights (month 1 × 6 …
 month 6 × 1), mirroring how scorecards weight the most recent payment status.
 
-*Total engineered features:* 38 (6 aggregates + 6 signed-log + 12 utilisation/delay + 3 trends + 11 others).
+*Total engineered features:* 38.
 
 ## Design decisions
 
@@ -119,7 +119,7 @@ month 6 × 1), mirroring how scorecards weight the most recent payment status.
   LGBM split gains map naturally onto SHAP `TreeExplainer`; XGBoost is kept as
   the equal-conditions challenger (it leads on PR AUC and F1 — the choice
   matters when missing a default costs more than a false alarm).
-- **Probabilities calibrated (isotonic) with Brier score improvement (+0.0455).** `calibration_check.py` reports before/after (`0.1744` → `0.1289`). The live demo uses raw (uncalibrated) probabilities for simplicity, but the pipeline supports `CalibratedClassifierCV`; production should apply a cost-sensitive threshold rather than the fixed 0.5.
+- **Calibration evaluated (isotonic) with Brier improvement (+0.0455).** `calibration_check.py` reports before/after (`0.1744` → `0.1289`); the calibration step (`CalibratedClassifierCV`) is included in the pipeline, but the live demo uses raw (uncalibrated) probabilities for simplicity; production should apply calibrated outputs with a cost-sensitive threshold rather than the fixed 0.5.
 
 ## Repository layout
 
@@ -194,10 +194,9 @@ Executed with outputs committed, so figures render directly on GitHub:
 
 - Yeh, I.-C., & Lien, C.-H. (2009). *The comparisons of data mining techniques
   for the predictive accuracy of probability of default of credit card
-  clients.* Expert Systems with Applications, 36(2), 2473–2480. — the source
+  clients.* Expert Systems with Applications, 36(2), 2473–2480. — source
   paper for the dataset.
-- [CI badge](https://github.com/Zhanali0663/credit-scoring-ml/actions) runs ruff and
-  pytest on every push; Docker images are rebuilt on `main`.
+- [CI workflow](https://github.com/Zhanali0663/credit-scoring-ml/actions) (ruff + pytest) and [Docker image](https://github.com/Zhanali0663/credit-scoring-ml/blob/main/Dockerfile) rebuilt on `main`.
 
 ## License
 

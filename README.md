@@ -1,6 +1,6 @@
 ﻿# Credit Scoring — Default Risk Prediction
 
-A reproducible end-to-end ML pipeline for credit-card default prediction (UCI dataset, 30k clients, 2005). Five model families benchmarked under identical conditions; headline LightGBM reaches test ROC AUC 0.783 with CV std ±0.006. Includes SHAP interpretation, Docker, CI, Streamlit demo, formal `MODEL_CARD.md`, calibration check (`calibration_check.py`), property-based tests (`test_invariants.py`), quick reference scripts (`threshold_optimization.py`), improvement plan (`IMPROVEMENT_PLAN.md`), and `DOCUMENTATION.md`.
+A reproducible end-to-end ML pipeline for credit-card default prediction (UCI dataset, 30k clients, 2005). Five model families benchmarked under identical conditions; headline LightGBM reaches test ROC AUC 0.783 (seed 42; mean 0.791 ± 0.007 over 5 splits, CV std ±0.006). Includes SHAP interpretation, Docker, CI, Streamlit demo, formal `MODEL_CARD.md`, calibration check (`calibration_check.py`), property-based tests (`test_invariants.py`), quick reference scripts (`threshold_optimization.py`), improvement plan (`IMPROVEMENT_PLAN.md`), and `DOCUMENTATION.md`.
 
 [![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
@@ -58,10 +58,7 @@ train-fold metrics, which do not transfer to a genuinely held-out set.
 
 Measured on the same fixed split across two full runs (seed 42):
 
-| Run | Setup | Test ROC AUC (LightGBM) | CV ROC AUC (XGBoost) |
-|---|---|---|---|
-| 1 | 23 raw columns + 12 behavioural aggregates, default hyperparameters | 0.7765 | 0.7769 |
-| 2 | + 26 engineered features (signed-log money, per-month utilisation, recency-weighted delay, delay streak) and Optuna tuning of XGBoost/LightGBM | 0.7828 | 0.7886 |
+*One headline split (seed 42): 23 raw cols → 0.7765; engineered + tuned → 0.7828 (see 5-seed ablation below for robust comparison).*
 
 A quick 5-seed ablation (`reports/metrics/ablation.csv`, `ablation_full.py`) using only LightGBM (fast) shows engineered features lift AUC over raw consistently (`+0.003` to `+0.013` across seeds); tuned vs default parameters vary by seed (`±0.005` range), meaning the tuning effect is within noise. Mean ± std across 5 seeds (`42`, `123`, `999`, `2026`, `7`):
 
@@ -72,9 +69,9 @@ A quick 5-seed ablation (`reports/metrics/ablation.csv`, `ablation_full.py`) usi
 | raw + tuned | 0.7871 | ±0.0096 | 29 |
 | engineered + tuned | 0.7911 | ±0.0071 | 61 |
 
-Tuning effect (tuned − default): `+0.006` ± `0.003` (within CV noise ±0.006); feature engineering effect: `+0.005` ± `0.002` (stable across seeds).
+Paired differences across 5 seeds (`42`, `123`, `999`, `2026`, `7`): feature engineering `+0.005` ± `0.002` (positive on all 5 seeds); tuning `+0.006` ± `0.003` (positive on 5/5 seeds). Both effects are small relative to the headline CV std (`±0.006`) but consistently positive; dominance claims should be treated cautiously. The headline benchmark (test AUC 0.783, fixed split) remains the best single evidence of performance.
 
-Both effects are small but consistently positive across 5 seeds (feature engineering: `+0.005` ± `0.002`; tuning: `+0.006` ± `0.003`); neither effect exceeds the CV noise (`±0.006`), so claims of dominance should be treated cautiously. The headline benchmark remains the best evidence of performance (test AUC 0.783, CV `±0.006`).
+*Note:* Raw feature count is 29 (original 23 + monetary/payment aggregates); engineered count is 61 (derived features from pipeline). *Caution:* Optuna tuning used seed 42; other seeds may have slight optimism from shared hyperparameters. All paired differences positive (5/5 seeds).
 
 ## Data
 
@@ -196,7 +193,8 @@ Executed with outputs committed, so figures render directly on GitHub:
 - **SHAP output ≠ regulatory reason codes.** Adverse-action lettering needs a
   mapped, human-readable reason set — noted in the model card, not solved here.
 - **Calibration available but demo uses raw probabilities.** `calibration_check.py` applies isotonic calibration (`CalibratedClassifierCV`) and reports Brier improvement (`0.1744` → `0.1289`, lower is better). The live demo keeps uncalibrated probabilities for simplicity; production deployment should use calibrated outputs with a cost-sensitive threshold.
-- **Cost-sensitive threshold evaluated.** `threshold_optimization.py` uses the held-out test sample (for demonstration only; production should use out-of-fold predictions) with 5:1 cost ratio (FN:FP). The optimal raw-score threshold is ~0.35 (cost 1173 vs 1217 at 0.50), a ~3.6% cost reduction. The theoretical calibrated threshold for 5:1 would be ~0.17, but the uncalibrated model (`class_weight="balanced"`) produces higher raw scores, so the empirical optimum is 0.35. Production should apply calibrated outputs (`CalibratedClassifierCV`) and select the threshold on a separate validation set.
+- **Cost-sensitive threshold evaluated.** `threshold_optimization.py` (test-set, demonstration only — production needs out-of-fold predictions) with 5:1 cost ratio (FN cost 5× FP). Optimal threshold ~0.35 (cost ~1173 vs ~1217 at 0.50, ~3.6% reduction; on ~6 000 test clients, FN=5, FP=1). The theoretical calibrated threshold for 5:1 is ~0.17, but `class_weight="balanced"` raises raw scores, so the empirical optimum is ~0.35.
+- **Calibration note.** Brier `0.1744` → `0.1289` (isotonic); part of the gain corrects the probability shift from `class_weight="balanced"`, not solely calibration benefit.
 ## Business take-away
 The pipeline supports production-style deployment: deterministic split (`seed=42`), containerised runtime (`Dockerfile`), calibration (`CalibratedClassifierCV`), formal artifacts (`MODEL_CARD.md`), property-based invariants (`tests/test_invariants.py`), reference ablation/drift scripts, and cost-threshold evaluation (`threshold_optimization.py`). The model itself is a methodology demonstration (`UCI` 2005 dataset, single portfolio). A business-optimal threshold with 5:1 cost ratio shifts from 0.50 to ~0.35 (cost 1173 vs 1217), reducing cost by ~3.6% on the test sample; calibrated outputs (`calibration_check.py`, Brier `0.1744` → `0.1289`) and validation-set threshold selection are the next production steps.
 

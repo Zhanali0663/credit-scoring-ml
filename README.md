@@ -17,6 +17,7 @@ A reproducible end-to-end ML pipeline for credit-card default prediction (UCI da
 - [Reproducing](#reproducing)
 - [Notebooks](#notebooks)
 - [Limitations](#limitations)
+- [Business take-away](#business-take-away)
 - [References](#references)
 - [License](#license)
 
@@ -73,7 +74,7 @@ A quick 5-seed ablation (`reports/metrics/ablation.csv`, `ablation_full.py`) usi
 
 Tuning effect (tuned − default): `+0.006` ± `0.003` (within CV noise ±0.006); feature engineering effect: `+0.005` ± `0.002` (stable across seeds).
 
-Tuning effect: within noise (`±0.003`); feature engineering dominates (`+0.005`).
+Both effects are small but consistently positive across 5 seeds (feature engineering: `+0.005` ± `0.002`; tuning: `+0.006` ± `0.003`); neither effect exceeds the CV noise (`±0.006`), so claims of dominance should be treated cautiously. The headline benchmark remains the best evidence of performance (test AUC 0.783, CV `±0.006`).
 
 ## Data
 
@@ -126,7 +127,7 @@ month 6 × 1), mirroring how scorecards weight the most recent payment status.
   LGBM split gains map naturally onto SHAP `TreeExplainer`; XGBoost is kept as
   the equal-conditions challenger (it leads on PR AUC and F1 — the choice
   matters when missing a default costs more than a false alarm).
-- **Calibration evaluated (isotonic):** `calibration_check.py` improves Brier score by `Brier `0.1744` → `0.1289` (lower is better), lower is better). The pipeline includes `CalibratedClassifierCV`; the live demo uses raw (uncalibrated) probabilities for simplicity. Production should apply calibrated outputs with a cost-sensitive threshold rather than the fixed 0.5.
+- **Calibration evaluated (isotonic):** `calibration_check.py` improves Brier score from `0.1744` to `0.1289` (`isotonic`, lower is better). The pipeline includes `CalibratedClassifierCV`; the live demo uses raw (uncalibrated) probabilities for simplicity. Production should apply calibrated outputs with a cost-sensitive threshold rather than the fixed 0.5.
 
 ## Repository layout
 
@@ -194,11 +195,9 @@ Executed with outputs committed, so figures render directly on GitHub:
   under adverse-impact review) for production fair-lending reasons.
 - **SHAP output ≠ regulatory reason codes.** Adverse-action lettering needs a
   mapped, human-readable reason set — noted in the model card, not solved here.
-- **Calibration available but demo uses raw probabilities.** `calibration_check.py` applies isotonic calibration (`CalibratedClassifierCV`) and reports Brier improvement (`Brier 0.1744` → `0.1289`). The live demo keeps uncalibrated probabilities for simplicity; production deployment should use calibrated outputs with a cost-sensitive threshold.
+- **Calibration available but demo uses raw probabilities.** `calibration_check.py` applies isotonic calibration (`CalibratedClassifierCV`) and reports Brier improvement (`0.1744` → `0.1289`, lower is better). The live demo keeps uncalibrated probabilities for simplicity; production deployment should use calibrated outputs with a cost-sensitive threshold.
 - **Cost-sensitive threshold evaluated.** `threshold_optimization.py` uses the held-out test sample (for demonstration only; production should use out-of-fold predictions) with 5:1 cost ratio (FN:FP). The optimal raw-score threshold is ~0.35 (cost 1173 vs 1217 at 0.50), a ~3.6% cost reduction. The theoretical calibrated threshold for 5:1 would be ~0.17, but the uncalibrated model (`class_weight="balanced"`) produces higher raw scores, so the empirical optimum is 0.35. Production should apply calibrated outputs (`CalibratedClassifierCV`) and select the threshold on a separate validation set.
-- **Threshold assumption is illustrative.** The shipped demo uses 0.5 for visual simplicity; business-optimal selection requires the cost matrix above.
-
-### Business take-away
+## Business take-away
 The pipeline supports production-style deployment: deterministic split (`seed=42`), containerised runtime (`Dockerfile`), calibration (`CalibratedClassifierCV`), formal artifacts (`MODEL_CARD.md`), property-based invariants (`tests/test_invariants.py`), reference ablation/drift scripts, and cost-threshold evaluation (`threshold_optimization.py`). The model itself is a methodology demonstration (`UCI` 2005 dataset, single portfolio). A business-optimal threshold with 5:1 cost ratio shifts from 0.50 to ~0.35 (cost 1173 vs 1217), reducing cost by ~3.6% on the test sample; calibrated outputs (`calibration_check.py`, Brier `0.1744` → `0.1289`) and validation-set threshold selection are the next production steps.
 
 ## References

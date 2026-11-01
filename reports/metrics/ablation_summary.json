@@ -1,0 +1,84 @@
+{
+  "model": "lightgbm",
+  "seeds": [
+    42,
+    123,
+    999,
+    2026,
+    7
+  ],
+  "n_features_raw": 23,
+  "n_features_engineered": 61,
+  "summary": [
+    {
+      "config": "raw_default",
+      "features": 23,
+      "mean_roc_auc": 0.7821561468978504,
+      "std_roc_auc": 0.007674310382696763,
+      "n_seeds": 5
+    },
+    {
+      "config": "eng_default",
+      "features": 61,
+      "mean_roc_auc": 0.7822395357189105,
+      "std_roc_auc": 0.006750197118838827,
+      "n_seeds": 5
+    },
+    {
+      "config": "raw_tuned",
+      "features": 23,
+      "mean_roc_auc": 0.7870063090714491,
+      "std_roc_auc": 0.007348613780335724,
+      "n_seeds": 5
+    },
+    {
+      "config": "eng_tuned",
+      "features": 61,
+      "mean_roc_auc": 0.7913613470963321,
+      "std_roc_auc": 0.006635357982846308,
+      "n_seeds": 5
+    }
+  ],
+  "paired_comparisons": {
+    "feature_engineering_default": {
+      "treatment": "eng_default",
+      "control": "raw_default",
+      "mean_delta": 8.338882106007084e-05,
+      "std_delta": 0.0032072209274708976,
+      "positive_seeds": 2,
+      "n_seeds": 5
+    },
+    "feature_engineering_tuned": {
+      "treatment": "eng_tuned",
+      "control": "raw_tuned",
+      "mean_delta": 0.004355038024883106,
+      "std_delta": 0.0017986972174436626,
+      "positive_seeds": 5,
+      "n_seeds": 5
+    },
+    "tuning_raw": {
+      "treatment": "raw_tuned",
+      "control": "raw_default",
+      "mean_delta": 0.00485016217359866,
+      "std_delta": 0.0015469690663448478,
+      "positive_seeds": 5,
+      "n_seeds": 5
+    },
+    "tuning_engineered": {
+      "treatment": "eng_tuned",
+      "control": "eng_default",
+      "mean_delta": 0.009121811377421695,
+      "std_delta": 0.0035380709045390434,
+      "positive_seeds": 5,
+      "n_seeds": 5
+    },
+    "combined": {
+      "treatment": "eng_tuned",
+      "control": "raw_default",
+      "mean_delta": 0.009205200198481766,
+      "std_delta": 0.002383086185531489,
+      "positive_seeds": 5,
+      "n_seeds": 5
+    }
+  }
+}

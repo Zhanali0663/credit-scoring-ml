@@ -149,6 +149,9 @@ df.head()
 
 # %% [markdown]
 # ## Engineered features summary
+#
+# The model uses all 38 derived features; the table below describes a
+# representative subset (aggregates, ratios, delay signals and trends).
 
 # %%
 new_cols = ['BILL_TOTAL', 'BILL_STD', 'BILL_MAX', 'PAY_TOTAL', 'PAY_STD', 'PAY_MAX',
@@ -164,9 +167,9 @@ df[new_cols].describe().T
 # %% [markdown]
 # ## Behavioural split by target class
 #
-# `N_MONTHS_DELAY`, `MAX_DELAY_SEVERITY`, `DELIEVER`... `DELAY_WEIGHTED` and
-# `UTILIZATION` separate defaulters from payers nicely — they aggregate raw
-# payment history into monotonic business signals.
+# `N_MONTHS_DELAY`, `MAX_DELAY_SEVERITY`, `DELAY_WEIGHTED` and `UTILIZATION`
+# separate defaulters from payers nicely — they aggregate raw payment history
+# into monotonic business signals.
 
 # %%
 group = df.groupby('default_payment_next_month')[new_cols].mean().T
@@ -216,15 +219,16 @@ print(f'train {X_train.shape} | test {X_test.shape}')
 # %% [markdown]
 # ## Cross-validate all 5 models (compact leaderboard)
 #
-# Same `cross_validate` helper as the production pipeline. This step is slow
-# (~10–15 minutes on CPU); change `n_splits=2` for a fast local trial.
+# Same `cross_validate` helper as the production pipeline (5-fold stratified
+# CV on the 24k-row training set). It takes a few minutes on CPU. Reduce
+# `n_splits` only for a quick local smoke run, and report the setting used.
 
 # %%
 num_features = X_train.select_dtypes(include='number').columns.tolist()
 rows = []
 for name in MODEL_REGISTRY:
     pipe = build_pipeline(name, num_features=num_features)
-    summary = cross_validate(pipe, X_train, y_train, n_splits=2)
+    summary = cross_validate(pipe, X_train, y_train, n_splits=5)
     rows.append({'model': name, **summary['mean']})
 result_cv = pd.DataFrame(rows).sort_values(by='roc_auc', ascending=False).set_index('model')
 result_cv.round(4)
@@ -275,6 +279,8 @@ from src.data.loader import load_raw_data, basic_clean
 from src.features.engineering import add_behavioural_features, build_features_target
 from src.features.splitting import stratified_split
 from src.models.pipe import build_pipeline
+from src.visualization.shap_utils import compute_shap_values
+%matplotlib inline
 
 df = basic_clean(load_raw_data())
 df = add_behavioural_features(df)
@@ -283,19 +289,12 @@ X_train, X_test, y_train, y_test = stratified_split(X, y, random_state=42)
 
 pipe = build_pipeline('lightgbm', num_features=X_train.columns.tolist())
 pipe.fit(X_train, y_train)
-estimator = pipe.named_steps['estimator']
 
-# tree-based SHAP explainers operate on raw (unscaled) values
+# The estimator was trained on StandardScaler output, so TreeExplainer must
+# receive the scaled matrix. `compute_shap_values` does that and returns the
+# original (unscaled) rows for readable plots.
 X_sample = X_test.sample(n=min(2000, len(X_test)), random_state=42)
-explainer = shap.TreeExplainer(estimator)
-shap_values = explainer.shap_values(X_sample)
-
-if isinstance(shap_values, list):
-    sv = shap_values[1]
-else:
-    sv = shap_values
-    if sv.ndim == 3:
-        sv = sv[:, :, 1]
+sv, X_sample = compute_shap_values(pipe, X_sample)
 print('Explainer ready, shap matrix shape:', sv.shape)
 
 # %% [markdown]
@@ -346,7 +345,7 @@ def parse_blocks(source: str):
             lines = lines[1:]
         while lines and not lines[-1].strip():
             lines = lines[:-1]
-        if not lines or all(not l.strip() for l in lines):
+        if not lines or all(not line.strip() for line in lines):
             continue
         out.append((typ, lines))
     return out
@@ -356,11 +355,11 @@ def _split_intro(lines: list[str]):
     """Split the leading (unmarked) block into (markdown_heading, code)."""
     heading: list[str] = []
     idx = 0
-    for i, l in enumerate(lines):
-        if l.startswith("# "):
-            heading.append(l[2:])
+    for i, line in enumerate(lines):
+        if line.startswith("# "):
+            heading.append(line[2:])
             idx = i + 1
-        elif not l.strip():
+        elif not line.strip():
             continue
         else:
             idx = i
@@ -376,7 +375,7 @@ def to_ipynb(source: str):
         heading, code = _split_intro(blocks[0][1])
         if heading:
             cells.append({"cell_type": "markdown", "metadata": {}, "source": "\n".join(heading).strip()})
-        if any(l.strip() for l in code):
+        if any(line.strip() for line in code):
             cells.append({
                 "cell_type": "code", "execution_count": None, "metadata": {},
                 "outputs": [], "source": "\n".join(code).strip(),
@@ -385,7 +384,10 @@ def to_ipynb(source: str):
 
     for typ, lines in blocks:
         if typ == "markdown":
-            text = [l[2:] if l.startswith("# ") else l for l in lines]
+            text = [
+                line[2:] if line.startswith("# ") else ("" if line.strip() == "#" else line)
+                for line in lines
+            ]
             cells.append({"cell_type": "markdown", "metadata": {}, "source": "\n".join(text).strip()})
         else:
             cells.append({
@@ -405,7 +407,7 @@ def to_ipynb(source: str):
 
 
 if __name__ == "__main__":
-    base = pathlib.Path(r"C:\All\why\notebooks")
+    base = pathlib.Path(__file__).resolve().parents[1] / "notebooks"
     base.mkdir(parents=True, exist_ok=True)
     for name, source in notebooks.items():
         nb = to_ipynb(source)

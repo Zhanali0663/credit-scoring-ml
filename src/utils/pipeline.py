@@ -150,8 +150,9 @@ def run() -> dict[str, Any]:
 
     if best_model_name in {"xgboost", "lightgbm", "catboost", "random_forest"}:
         try:
-            shap_summary_plot(estimator, X_test, save_to=figures_dir / f"{best_model_name}_shap_summary.png")
-            shap_bar_plot(estimator, X_test, save_to=figures_dir / f"{best_model_name}_shap_bar.png")
+            shap_sample = X_test.sample(n=min(2000, len(X_test)), random_state=42)
+            shap_summary_plot(pipe, shap_sample, save_to=figures_dir / f"{best_model_name}_shap_summary.png")
+            shap_bar_plot(pipe, shap_sample, save_to=figures_dir / f"{best_model_name}_shap_bar.png")
         except Exception as exc:  # noqa: BLE001
             logger.warning("SHAP computation failed for %s: %s", best_model_name, exc)
 

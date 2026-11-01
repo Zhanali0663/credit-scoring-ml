@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.data.loader import load_raw_data
-from src.utils.logging import get_logger
+from src.data.loader import load_raw_data  # noqa: E402
+from src.utils.logging import get_logger  # noqa: E402
 
 logger = get_logger(__name__)
 

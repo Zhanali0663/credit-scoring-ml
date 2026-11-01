@@ -32,7 +32,7 @@ jobs:
 
       - name: Lint with ruff
         run: |
-          ruff check src tests app
+          ruff check src tests app scripts
 
       - name: Run unit tests
         env:

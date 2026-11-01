@@ -44,14 +44,14 @@ EXPECTED_COLS = list(pipeline.feature_names_in_)
 
 def predict(*values) -> tuple[str, str, pd.DataFrame]:
     """Compute the default probability from the form inputs."""
-    client = dict(zip(RAW_FIELDS, values))
+    client = dict(zip(RAW_FIELDS, values, strict=False))
     df = add_behavioural_features(pd.DataFrame([client]))[EXPECTED_COLS]
 
     proba = float(pipeline.predict_proba(df)[0, 1])
     verdict = (
-        "⚠️ Likely to default next month (threshold 0.5)"
+        "HIGH RISK - likely to default next month (illustrative threshold 0.5)"
         if proba >= 0.5
-        else "✅ Likely to pay on time (threshold 0.5)"
+        else "LOW RISK - likely to pay on time (illustrative threshold 0.5)"
     )
 
     derived = df.drop(columns=list(RAW_FIELDS)).iloc[0].round(4).reset_index()
@@ -62,10 +62,11 @@ def predict(*values) -> tuple[str, str, pd.DataFrame]:
 
 with gr.Blocks(title="Credit Scoring Demo") as demo:
     gr.Markdown(
-        "# 💳 Credit Scoring — default probability\n"
+        "# Credit Scoring - default probability\n"
         "LightGBM model (Optuna-tuned) trained on the UCI *Default of Credit Card* "
-        "dataset. Test ROC AUC **0.78**. Adjust the borrower profile and press **Predict**. "
-        "Demo for methodology illustration only — not a lending decision."
+        "dataset. Test ROC AUC **0.783** on the fixed seed-42 holdout. "
+        "Adjust the borrower profile and press **Predict**. "
+        "This is a methodology demo, not a lending decision."
     )
     with gr.Row():
         with gr.Column():
@@ -84,8 +85,9 @@ with gr.Blocks(title="Credit Scoring Demo") as demo:
     btn.click(predict, inputs, [proba_out, verdict_out, feats_out])
     gr.Markdown(
         "Mirrors the [credit-scoring-ml](https://github.com/Zhanali0663/credit-scoring-ml) "
-        "project; probabilities are not cost-calibrated. Educational demo only."
+        "project. Probabilities are raw, class-weighted scores; see the repository's "
+        "`reports/metrics/calibration.json` and `threshold.json` for the calibrated study."
     )
 
 if __name__ == "__main__":
-    demo.launch()
+    demo.launch(server_name="0.0.0.0", server_port=7860)

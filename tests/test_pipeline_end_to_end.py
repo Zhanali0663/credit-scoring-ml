@@ -61,4 +61,7 @@ def test_full_pipeline_smoke(tiny_dataset: pd.DataFrame, tmp_path: Path) -> None
     table = summary["table"]
     assert not table.empty
     assert {"model", "roc_auc", "f1"}.issubset(table.columns)
-    assert (tmp_path / "artifacts").glob("*.joblib")
+    artifacts = list((tmp_path / "artifacts").glob("*.joblib"))
+    assert len(artifacts) == len(table)
+    assert (tmp_path / "metrics" / "comparison.csv").exists()
+    assert (tmp_path / "metrics" / "comparison.json").exists()

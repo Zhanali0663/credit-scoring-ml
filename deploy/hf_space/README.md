@@ -4,16 +4,21 @@ emoji: 💳
 colorFrom: blue
 colorTo: purple
 sdk: docker
-sdk_version: "3.12"
-python_version: "3.12"
-app_file: app.py
-app_port: 8501
+app_port: 7860
 pinned: false
-license: mit
 ---
 
 # Credit Scoring Demo
 
-> Note: Streamlit SDK was deprecated by Hugging Face (2025-04); this repo
-> is set up with the Docker SDK for future deployment. For a working 24/7
-> live demo, see the Streamlit Community Cloud link in the parent repository.
+Predict the probability that a credit-card client defaults next month.
+
+- Dataset: UCI *Default of Credit Card Clients* (30,000 borrowers, ~22% positives).
+- Model: LightGBM, 61 features (23 raw + 38 engineered).
+- Test ROC AUC: **0.783** on the fixed seed-42 holdout.
+- Probabilities are the raw, class-weighted scores. Isotonic calibration and a
+  cost-sensitive threshold are reported in the parent repository
+  (`reports/metrics/calibration.json`, `reports/metrics/threshold.json`).
+
+This Space is an educational demo, not a lending decision system. Free CPU
+Spaces can pause or sleep; run the parent project's app locally with
+`streamlit run app/streamlit_app.py`.

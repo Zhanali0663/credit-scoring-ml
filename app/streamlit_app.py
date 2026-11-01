@@ -1,9 +1,12 @@
 """Live Streamlit preview — Credit Scoring ML.
 
-Run locally:
+Run locally::
+
     streamlit run app/streamlit_app.py --server.port=8501
 
-Uses models from ``models_artifacts/``.
+The demo reads the pipelines produced by ``python -m src.utils.pipeline`` from
+``models_artifacts/``. Probabilities are the raw model scores; the calibrated
+version and the cost-sensitive threshold study live in ``reports/metrics/``.
 """
 from __future__ import annotations
 
@@ -12,12 +15,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import joblib
 import pandas as pd
 import streamlit as st
 
-from src.features.engineering import add_behavioural_features
-from src.utils.config import get_project_root
+from app.predict import available_models, load_model, predict_one
+from src.visualization.shap_utils import compute_shap_values
 
 # ------------------------------------------------------------------
 # Config
@@ -27,11 +29,6 @@ st.set_page_config(
     page_icon="💳",
     layout="wide",
 )
-
-# ------------------------------------------------------------------
-# Optional LLM explanation (OpenRouter) — read from secrets/env
-# ------------------------------------------------------------------
-OPENROUTER_API_KEY = st.secrets.get("OPENROUTER_API_KEY", "") if hasattr(st, "secrets") else ""
 
 FEATURE_DEFAULTS = {
     "LIMIT_BAL": 200_000,
@@ -59,93 +56,49 @@ FEATURE_DEFAULTS = {
     "PAY_AMT6": 5_000,
 }
 
-MODEL_NAMES = [
-    "lightgbm",
-    "xgboost",
-    "catboost",
-    "random_forest",
-    "logistic_regression",
-]
+TREE_MODELS = {"lightgbm", "xgboost", "catboost", "random_forest"}
+
 
 # ------------------------------------------------------------------
 # Helpers
 # ------------------------------------------------------------------
 @st.cache_resource(show_spinner=False)
-def load_models():
-    artifacts_dir = get_project_root() / "models_artifacts"
-    models = {}
-    for path in sorted(artifacts_dir.glob("*.joblib")):
+def load_models() -> dict[str, object]:
+    models: dict[str, object] = {}
+    for name in available_models():
         try:
-            models[path.stem] = joblib.load(path)
-        except Exception as exc:
-            st.warning(f"Failed to load {path.name}: {exc}")
-    return models, artifacts_dir
+            models[name] = load_model(name)
+        except Exception as exc:  # pragma: no cover - defensive UI path
+            st.warning(f"Failed to load {name}: {exc}")
+    return models
 
 
-def predict(client_dict: dict, model_name: str, artifacts_dir: Path):
-    pipeline = joblib.load(artifacts_dir / f"{model_name}.joblib")
-    df = pd.DataFrame([client_dict])
-    df_eng = add_behavioural_features(df)
-
-    expected_cols = (
-        list(pipeline.feature_names_in_)
-        if hasattr(pipeline, "feature_names_in_")
-        else list(df_eng.columns)
-    )
-    df_eng = df_eng[expected_cols]
-
-    proba = float(pipeline.predict_proba(df_eng)[0, 1])
-    pred = int(pipeline.predict(df_eng)[0])
-    return {"model": model_name, "default_proba": proba, "prediction": pred, "features": df_eng}
-
-
-def explain_with_llm(proba: float, verdict: str, client_dict: dict) -> str:
-    if not OPENROUTER_API_KEY:
-        return ""
+def local_contributions(pipeline: object, features: pd.DataFrame, top_n: int = 8) -> pd.Series | None:
+    """Return the largest absolute SHAP contributions for one borrower."""
     try:
-        import requests
-        prompt = (
-            f"A credit-scoring model predicted default probability {proba:.1%} "
-            f"({verdict}). Client profile: {client_dict}. "
-            f"Explain in 2-3 sentences why this risk level was assigned and what factors drive it."
-        )
-        resp = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": "mistralai/mistral-7b-instruct",
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.3,
-                "max_tokens": 300,
-            },
-            timeout=30,
-        )
-        resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"].strip()
-    except Exception as exc:
-        return f"LLM explanation failed: {exc}"
+        values, _ = compute_shap_values(pipeline, features)
+    except Exception:  # SHAP is only available for tree models
+        return None
+    series = pd.Series(values[0], index=features.columns)
+    return series.reindex(series.abs().sort_values(ascending=False).index).head(top_n)
 
 
 # ------------------------------------------------------------------
 # UI
 # ------------------------------------------------------------------
-def main():
+def main() -> None:
     st.title("💳 Credit Scoring — Live Preview")
     st.markdown(
         "End-to-end ML pipeline for predicting credit-card default (UCI dataset). "
         "Adjust borrower features, pick a model, and see the predicted probability."
     )
 
-    models, artifacts_dir = load_models()
+    models = load_models()
     if not models:
-        st.error("No trained models found in `models_artifacts/`. Run the pipeline first.")
+        st.error("No trained models found in `models_artifacts/`. Run `python -m src.utils.pipeline` first.")
         st.stop()
 
-    available_models = [m for m in MODEL_NAMES if m in models] or list(models.keys())
-
+    available = list(models)
     col_input, col_result = st.columns([2, 1])
 
     with col_input:
@@ -163,15 +116,24 @@ def main():
 
     with col_result:
         st.subheader("Model")
-        model_name = st.selectbox("Choose model", available_models, index=0)
-        st.caption(f"Trained on UCI Credit Card Default. ROC AUC ~0.78 (LightGBM).")
+        model_name = st.selectbox("Choose model", available, index=0)
+        threshold = st.slider("Decision threshold", 0.05, 0.95, 0.50, 0.01)
+        st.caption(
+            "The 0.5 cut-off is illustrative. See `reports/metrics/threshold.json` "
+            "for an out-of-fold, cost-sensitive threshold."
+        )
 
     if not submitted:
         st.info("Fill the borrower form and press **Predict**.")
         return
 
     try:
-        result = predict(user_input, model_name, artifacts_dir)
+        result = predict_one(
+            user_input,
+            model_name=model_name,
+            threshold=threshold,
+            pipeline=models[model_name],
+        )
     except Exception as exc:
         st.error(f"Prediction failed: {exc}")
         return
@@ -193,20 +155,30 @@ def main():
     else:
         st.success(f"✅ Verdict: {verdict_text}")
 
-    # Engineered features expander
-    with st.expander("Engineered behavioural features (used by model)"):
-        extra = result["features"].drop(columns=list(FEATURE_DEFAULTS.keys())).iloc[0].round(4)
-        st.dataframe(pd.DataFrame({"feature": extra.index, "value": extra.values}))
-        st.json({k: float(v) for k, v in extra.to_dict().items()})
+    contributions = None
+    if model_name in TREE_MODELS:
+        contributions = local_contributions(models[model_name], result["features"])
 
-    # Optional LLM explanation
-    if st.checkbox("Show AI explanation (OpenRouter)"):
-        with st.spinner("Generating explanation..."):
-            explanation = explain_with_llm(proba, verdict_text, user_input)
-        if explanation:
-            st.info(explanation)
-        else:
-            st.warning("No API key configured. Add `OPENROUTER_API_KEY` to `.streamlit/secrets.toml`.")
+    if contributions is not None:
+        with st.expander("Top SHAP contributions (this borrower)"):
+            st.caption(
+                "Positive values push the default probability up; negative values push it down. "
+                "SHAP values are computed on the model's scaled input and shown per raw feature."
+            )
+            st.dataframe(
+                pd.DataFrame(
+                    {
+                        "feature": contributions.index,
+                        "SHAP value": contributions.to_numpy().round(4),
+                    }
+                )
+            )
+
+    with st.expander("Engineered behavioural features (used by model)"):
+        engineered = result["features"].iloc[0]
+        extra = engineered.drop(labels=list(FEATURE_DEFAULTS), errors="ignore").round(4)
+        st.dataframe(pd.DataFrame({"feature": extra.index, "value": extra.to_numpy()}))
+        st.json({k: float(v) for k, v in extra.to_dict().items()})
 
 
 if __name__ == "__main__":

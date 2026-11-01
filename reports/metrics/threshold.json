@@ -1,0 +1,70 @@
+{
+  "model": "lightgbm_isotonic_calibrated",
+  "random_state": 42,
+  "cost_matrix": {
+    "false_negative": 5.0,
+    "false_positive": 1.0
+  },
+  "selection": "out-of-fold training predictions",
+  "outer_folds": 5,
+  "inner_folds": 5,
+  "selected_threshold": 0.14916000000000001,
+  "baseline_threshold": 0.5,
+  "oof_at_0.5": {
+    "threshold": 0.5,
+    "precision": 0.6783144912641316,
+    "recall": 0.3729515916368431,
+    "f1": 0.48128342245989303,
+    "cost_total": 17584.0,
+    "cost_per_client": 0.7326666666666667,
+    "confusion": {
+      "tn": 17752,
+      "fp": 939,
+      "fn": 3329,
+      "tp": 1980
+    }
+  },
+  "oof_at_selected": {
+    "threshold": 0.14916000000000001,
+    "precision": 0.35379778255833194,
+    "recall": 0.8054247504238087,
+    "f1": 0.4916355274504168,
+    "cost_total": 12975.0,
+    "cost_per_client": 0.540625,
+    "confusion": {
+      "tn": 10881,
+      "fp": 7810,
+      "fn": 1033,
+      "tp": 4276
+    }
+  },
+  "test_at_0.5": {
+    "threshold": 0.5,
+    "precision": 0.6724386724386724,
+    "recall": 0.35116804822908815,
+    "f1": 0.4613861386138614,
+    "cost_total": 4532.0,
+    "cost_per_client": 0.7553333333333333,
+    "confusion": {
+      "tn": 4446,
+      "fp": 227,
+      "fn": 861,
+      "tp": 466
+    }
+  },
+  "test_at_selected": {
+    "threshold": 0.14916000000000001,
+    "precision": 0.34540750323415265,
+    "recall": 0.8048229088168802,
+    "f1": 0.48336727766463,
+    "cost_total": 3319.0,
+    "cost_per_client": 0.5531666666666667,
+    "confusion": {
+      "tn": 2649,
+      "fp": 2024,
+      "fn": 259,
+      "tp": 1068
+    }
+  },
+  "test_cost_reduction_pct": 26.76522506619594
+}

@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
 # Distribution / packaging
 .Python
 build/
@@ -30,6 +36,11 @@ env/
 ENV/
 .venv/
 
+# Local secrets / environment
+.env
+.streamlit/secrets.toml
+*.key
+
 # IDE / editor
 .idea/
 .vscode/settings.json
@@ -49,11 +60,17 @@ data/processed/*
 !data/processed/.gitkeep
 data/external/*
 !data/external/.gitkeep
+models_artifacts/*.joblib
+models_artifacts/*.pkl
+models_artifacts/*.cbm
+models_artifacts/*.json
+models_artifacts/*.txt
 
-# Local helper guides and run logs — not part of the deliverable
+# Local helper guides and run logs – not part of the deliverable
 PUSH_INSTRUCTIONS.md
 to_uninstall.txt
 *.log
 
 # OS
 Thumbs.db
+""" path="C:\All\why\.gitignore"

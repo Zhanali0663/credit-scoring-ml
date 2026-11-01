@@ -29,5 +29,5 @@ Thanks for your interest in improving this project!
 ## Commit style
 
 Use concise, imperative commit messages:
-`feat: add SMOTE handling`, `fix: guard division by zero in utilization`,
+`feat: add calibration report`, `fix: guard division by zero in utilization`,
 `docs: update README metrics table`.

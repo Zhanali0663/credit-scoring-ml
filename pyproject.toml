@@ -9,7 +9,7 @@ description = "End-to-end credit scoring ML pipeline with multi-model comparison
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "Zhanali" }]
 keywords = [
     "credit-scoring",
     "machine-learning",
@@ -27,6 +27,9 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
+
+[project.urls]
+Repository = "https://github.com/Zhanali0663/credit-scoring-ml"
 
 [tool.ruff]
 line-length = 100

@@ -26,7 +26,7 @@ EXPOSE 8501
 
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
 
-# Streamlit runs by default. For training, override the CMD:
+# Streamlit runs by default. For training, override the command:
 #   docker run --rm credit-scoring-ml python -m src.utils.pipeline
-ENTRYPOINT ["streamlit", "run", "app/streamlit_app.py", \
-            "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "app/streamlit_app.py", \
+     "--server.port=8501", "--server.address=0.0.0.0"]

@@ -1,0 +1,21 @@
+# Keep the build context small and avoid leaking local state into the image.
+.venv/
+.git/
+.gitignore
+.github/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]
+*.log
+.env
+.streamlit/secrets.toml
+
+# Data is mounted at runtime (see docker-compose.yml)
+data/raw/
+data/processed/
+data/external/
+notebooks/
+reports/figures/
+PUSH_INSTRUCTIONS.md
+to_uninstall.txt

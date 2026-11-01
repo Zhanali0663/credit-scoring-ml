@@ -220,12 +220,7 @@ using `HF_TOKEN` and `HF_REPO_ID` environment variables.
   computed here.
 - **SHAP is not a set of regulatory reason codes.** Adverse-action notices need a
   mapped, human-readable reason set.
-- **Tuning is partial.** Only XGBoost and LightGBM were tuned; the other three
-  models use defaults.
-- **The cost ratio is assumed.** The threshold analysis shows a method, not a
-  validated business policy.
-- **Not production infrastructure.** There is no serving API, monitoring,
-  experiment tracking or model registry in this repo.
+
 
 ## References
 

@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> 🔗 **Live demo:** https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app/
+> **Live demo:** https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app/
 
 An end-to-end, leakage-conscious ML pipeline that predicts credit-card default on
 the UCI *Default of Credit Card Clients* dataset (30,000 clients, Taiwan 2005).

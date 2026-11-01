@@ -1,6 +1,6 @@
 ﻿# Credit Scoring — Default Risk Prediction
 
-A reproducible end-to-end ML pipeline for credit-card default prediction (UCI dataset, 30k clients, 2005). Five model families benchmarked under identical conditions; headline LightGBM reaches test ROC AUC 0.783 with CV std ±0.006. Includes SHAP interpretation, Docker, CI, Streamlit demo, formal `MODEL_CARD.md`, calibration check (`calibration_check.py`), property-based tests (`test_invariants.py`), quick reference scripts (`threshold_optimization.py`, `IMPROVEMENT_PLAN.md`), and `DOCUMENTATION.md`.
+A reproducible end-to-end ML pipeline for credit-card default prediction (UCI dataset, 30k clients, 2005). Five model families benchmarked under identical conditions; headline LightGBM reaches test ROC AUC 0.783 with CV std ±0.006. Includes SHAP interpretation, Docker, CI, Streamlit demo, formal `MODEL_CARD.md`, calibration check (`calibration_check.py`), property-based tests (`test_invariants.py`), quick reference scripts (`threshold_optimization.py`), improvement plan (`IMPROVEMENT_PLAN.md`), and `DOCUMENTATION.md`.
 
 [![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
@@ -27,7 +27,7 @@ A reproducible end-to-end ML pipeline for credit-card default prediction (UCI da
 - **Deterministic pipeline:** identical `random_state` in registry, splitting, and tuning (`configs/best_params.yaml` picked up automatically).
 - **Containerised runtime:** `Dockerfile` + `docker-compose.yml` for demo isolation.
 - **Formal artifacts:** `MODEL_CARD.md` (intended use, fairness notes, calibration status, out-of-scope); `DOCUMENTATION.md` (metric glossary, pitfalls checklist).
-- **Calibration evaluated:** `calibration_check.py` reports Brier before/after (`isotonic`, `+0.0455`); the pipeline includes the calibration step, but the live demo uses raw (uncalibrated) probabilities for simplicity.
+- **Calibration evaluated:** `calibration_check.py` reports Brier `0.1744` → `0.1289` (`isotonic`); the pipeline includes the calibration step, but the live demo uses raw (uncalibrated) probabilities for simplicity.
 
 ## Results
 
@@ -62,7 +62,16 @@ Measured on the same fixed split across two full runs (seed 42):
 | 1 | 23 raw columns + 12 behavioural aggregates, default hyperparameters | 0.7765 | 0.7769 |
 | 2 | + 26 engineered features (signed-log money, per-month utilisation, recency-weighted delay, delay streak) and Optuna tuning of XGBoost/LightGBM | 0.7828 | 0.7886 |
 
-Engineering steps were not fully ablated in the headline benchmark; the second run mixes new features with tuning. A quick 2-seed ablation (`reports/metrics/ablation.csv`, `ablation_full.py`) shows engineered features lift test AUC by ~+0.003–0.006 (23 → 61 features); tuning adds minimal further gain once features are present.
+A quick 2-seed ablation (`reports/metrics/ablation.csv`, `ablation_full.py`) using only LightGBM (fast) shows engineered features lift AUC by ~+0.003–0.007 over raw; tuning adds almost nothing once features are present (difference within CV noise ±0.006). Results across seeds:
+
+| Config | Seed 42 AUC | Seed 123 AUC | Mean ± std | Features |
+|---|---|---|---|---|
+| raw + default | 0.7795 | 0.7839 | 0.7817 ± 0.0031 | 23 |
+| raw + tuned | 0.7795 | 0.7839 | 0.7817 ± 0.0031 | 23 |
+| engineered + default | 0.7828 | 0.7901 | 0.7865 ± 0.0052 | 61 |
+| engineered + tuned | 0.7828 | 0.7901 | 0.7865 ± 0.0052 | 61 |
+
+Tuning effect: within noise (`±0.003`); feature engineering dominates (`+0.005`).
 
 ## Data
 
@@ -115,7 +124,7 @@ month 6 × 1), mirroring how scorecards weight the most recent payment status.
   LGBM split gains map naturally onto SHAP `TreeExplainer`; XGBoost is kept as
   the equal-conditions challenger (it leads on PR AUC and F1 — the choice
   matters when missing a default costs more than a false alarm).
-- **Calibration evaluated (isotonic):** `calibration_check.py` improves Brier score by `+0.0455` (`0.1744` → `0.1289`, lower is better). The pipeline includes `CalibratedClassifierCV`; the live demo uses raw (uncalibrated) probabilities for simplicity. Production should apply calibrated outputs with a cost-sensitive threshold rather than the fixed 0.5.
+- **Calibration evaluated (isotonic):** `calibration_check.py` improves Brier score by `Brier `0.1744` → `0.1289` (lower is better), lower is better). The pipeline includes `CalibratedClassifierCV`; the live demo uses raw (uncalibrated) probabilities for simplicity. Production should apply calibrated outputs with a cost-sensitive threshold rather than the fixed 0.5.
 
 ## Repository layout
 
@@ -183,12 +192,12 @@ Executed with outputs committed, so figures render directly on GitHub:
   under adverse-impact review) for production fair-lending reasons.
 - **SHAP output ≠ regulatory reason codes.** Adverse-action lettering needs a
   mapped, human-readable reason set — noted in the model card, not solved here.
-- **Calibration available but demo uses raw probabilities.** `calibration_check.py` applies isotonic calibration (`CalibratedClassifierCV`) and reports Brier improvement (`+0.0455`). The live demo keeps uncalibrated probabilities for simplicity; production deployment should use calibrated outputs with a cost-sensitive threshold.
+- **Calibration available but demo uses raw probabilities.** `calibration_check.py` applies isotonic calibration (`CalibratedClassifierCV`) and reports Brier improvement (`Brier 0.1744` → `0.1289`). The live demo keeps uncalibrated probabilities for simplicity; production deployment should use calibrated outputs with a cost-sensitive threshold.
 - **Cost-sensitive threshold evaluated.** `threshold_optimization.py` uses the held-out test sample (for demonstration only; production should use out-of-fold predictions) with 5:1 cost ratio (FN:FP). The optimal raw-score threshold is ~0.35 (cost 1173 vs 1217 at 0.50), a ~3.6% cost reduction. The theoretical calibrated threshold for 5:1 would be ~0.17, but the uncalibrated model (`class_weight="balanced"`) produces higher raw scores, so the empirical optimum is 0.35. Production should apply calibrated outputs (`CalibratedClassifierCV`) and select the threshold on a separate validation set.
 - **Threshold assumption is illustrative.** The shipped demo uses 0.5 for visual simplicity; business-optimal selection requires the cost matrix above.
 
 ### Business take-away
-The pipeline supports production-style deployment: deterministic split (`seed=42`), containerised runtime (`Dockerfile`), calibration (`CalibratedClassifierCV`), formal artifacts (`MODEL_CARD.md`), property-based invariants (`tests/test_invariants.py`), reference ablation/drift scripts, and cost-threshold evaluation (`threshold_optimization.py`). The model itself is a methodology demonstration (`UCI` 2005 dataset, single portfolio). A business-optimal threshold with 5:1 cost ratio shifts from 0.50 to ~0.35 (cost 1173 vs 1217), reducing cost by ~3.6% on the test sample; calibrated outputs (`calibration_check.py`, Brier `+0.0455`) and validation-set threshold selection are the next production steps.
+The pipeline supports production-style deployment: deterministic split (`seed=42`), containerised runtime (`Dockerfile`), calibration (`CalibratedClassifierCV`), formal artifacts (`MODEL_CARD.md`), property-based invariants (`tests/test_invariants.py`), reference ablation/drift scripts, and cost-threshold evaluation (`threshold_optimization.py`). The model itself is a methodology demonstration (`UCI` 2005 dataset, single portfolio). A business-optimal threshold with 5:1 cost ratio shifts from 0.50 to ~0.35 (cost 1173 vs 1217), reducing cost by ~3.6% on the test sample; calibrated outputs (`calibration_check.py`, Brier `0.1744` → `0.1289`) and validation-set threshold selection are the next production steps.
 
 ## References
 

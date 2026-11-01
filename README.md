@@ -4,11 +4,34 @@ A reproducible ML pipeline that predicts next-month credit-card default on the
 UCI *Default of Credit Card Clients* dataset (30,000 borrowers, Taiwan, 2005).
 Five model families are benchmarked under identical conditions, the two
 strongest are tuned with Optuna, and the winning model is explained with SHAP.
-Includes a Streamlit scoring demo and a Dockerised runtime.
+Includes a Streamlit scoring demo, Docker runtime, CI (ruff + pytest), formal `MODEL_CARD.md`, calibration check, and ablation plan.
+
+## Table of Contents
+- [Results](#results)
+- [Data](#data)
+- [Live demo](#live-demo)
+- [Feature engineering](#feature-engineering)
+- [Design decisions](#design-decisions)
+- [Repository layout](#repository-layout)
+- [Reproducing](#reproducing)
+- [Notebooks](#notebooks)
+- [Limitations](#limitations)
+- [References](#references)
+- [License](#license)
+
+## Engineering highlights
 
 [![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
-[![CI](https://github.com/Zhanali0663/credit-scoring-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/Zhanali0663/credit-scoring-ml/actions) [![Live — Streamlit Cloud](https://img.shields.io/badge/Live-Streamlit_Cloud-blue?logo=streamlit)](https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Live — Streamlit Cloud](https://img.shields.io/badge/Live-Streamlit_Cloud-blue?logo=streamlit)](https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+## Engineering highlights (what separates this from a notebook)
+- **Reproducible split:** fixed `seed=42`, stratified 80/20, verified by `tests/test_pipeline_end_to_end.py`.
+- **No data leakage:** `StandardScaler` fitted inside each CV fold (`Pipeline` object); no SMOTE before split.
+- **Deterministic pipeline:** identical `random_state` in registry, splitting, and tuning (`configs/best_params.yaml` picked up automatically).
+- **Containerised runtime:** `Dockerfile` + `docker-compose.yml` for demo isolation.
+- **Formal artifacts:** `MODEL_CARD.md` (intended use, fairness notes, calibration status, out-of-scope); `DOCUMENTATION.md` (metric glossary, pitfalls checklist).
+- **Calibration check:** `calibration_check.py` reports Brier before/after (`isotonic`); live demo uses uncalibrated probabilities (noted in model card).
 
 ## Results
 
@@ -60,6 +83,11 @@ attributions.
 
 - **Live demo (Streamlit Community Cloud — free, 24/7, works):** https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app
   (connect repo `Zhanali0663/credit-scoring-ml`, main branch, `app` path; uses `.venv` deps + `models_artifacts/lightgbm.joblib`).
+- **HF Space — restored:** https://kuandykovzhanali-last.hf.space
+- **HF Space — new (static repo):** https://huggingface.co/spaces/Zhanali/credit-scoring-demo
+  (contains full deploy folder; running app needs PRO / Streamlit Community Cloud).
+  (original project preserved; our demo files added separately if needed).
+- **New Space (`credit-scoring-demo`) — ready for deploy:** requires PRO/Docker or manual Streamlit community deploy.
 - **GitHub repo:** https://github.com/Zhanali0663/credit-scoring-ml
 
 ## Feature engineering

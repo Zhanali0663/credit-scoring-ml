@@ -196,7 +196,6 @@ Executed with outputs committed, so figures render directly on GitHub:
   for the predictive accuracy of probability of default of credit card
   clients.* Expert Systems with Applications, 36(2), 2473–2480. — source
   paper for the dataset.
-- [CI workflow](https://github.com/Zhanali0663/credit-scoring-ml/actions) (ruff + pytest) and [Docker image](https://github.com/Zhanali0663/credit-scoring-ml/blob/main/Dockerfile) rebuilt on `main`.
 
 ## License
 

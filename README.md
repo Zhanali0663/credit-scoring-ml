@@ -4,6 +4,8 @@
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+> 🔗 **Live demo:** https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app/
+
 An end-to-end, leakage-conscious ML pipeline that predicts credit-card default on
 the UCI *Default of Credit Card Clients* dataset (30,000 clients, Taiwan 2005).
 Five model families are benchmarked under identical conditions, followed by a
@@ -204,8 +206,8 @@ docker compose up app                       # same app in a container
 ```
 
 The app shows the raw model probability and a configurable decision threshold.
-It does not advertise a public live URL: free-tier Streamlit/Hugging Face
-deployments sleep or pause, and a dead link is worse than none. The optional
+A public live preview is available at
+https://credit-scoring-ml-8qjuwktjdkyxrvcjv24uly.streamlit.app/ (free tier may sleep). The optional
 `deploy/hf_space/` bundle can be published with `python -m scripts.deploy_hf`
 using `HF_TOKEN` and `HF_REPO_ID` environment variables.
 
